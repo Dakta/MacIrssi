@@ -320,7 +320,7 @@ static char *kMIJoinChannelAlertKey = "kMIJoinChannelAlertKey";
   
   /* Check with user before sending multiple lines */
   if ([commands count] > PASTE_WARNING_THRESHOLD) {
-    int button = [[NSAlert alertWithMessageText:@"Confirmation request" defaultButton:@"Ok" alternateButton:@"Cancel" otherButton:nil informativeTextWithFormat:@"Do you really want to paste %d lines?", [commands count]] runModal];
+    int button = [[NSAlert alertWithMessageText:@"Confirmation request" defaultButton:@"Ok" alternateButton:@"Cancel" otherButton:nil informativeTextWithFormat:@"Do you really want to paste %lu lines?", (unsigned long)[commands count]] runModal];
     
     if (button == 0)
       return;
@@ -638,7 +638,7 @@ static char *kMIJoinChannelAlertKey = "kMIJoinChannelAlertKey";
 //-------------------------------------------------------------------
 - (void)queryCreated:(QUERY_REC *)qr automatically:(int)automatic
 {
-  queryObject = [[NSString alloc] initWithCString:qr->name];
+  queryObject = [[NSString alloc] initWithCString:qr->name encoding:NSUTF8StringEncoding];
 }
 
 
@@ -1456,13 +1456,10 @@ static char *kMIJoinChannelAlertKey = "kMIJoinChannelAlertKey";
 //-------------------------------------------------------------------
 - (void)applicationWillTerminate:(NSNotification *)aNotification
 {
-  NSEnumerator *enumerator = [[tabView tabViewItems] objectEnumerator];
-  ChannelController *tmp;
-  
-  while (tmp = [[enumerator nextObject] identifier])
-  {
+  for(ChannelController *tmp in [tabView tabViewItems]) {
     [tmp clearNickView];
   }
+
   [IrssiCore deinitialiseCore];
 }
 
@@ -1613,9 +1610,6 @@ static char *kMIJoinChannelAlertKey = "kMIJoinChannelAlertKey";
 //-------------------------------------------------------------------
 - (void)awakeFromNib
 {
-  // The crash catcher should be first in the list apparently.
-  UKCrashReporterCheckForCrash();
-  
   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
   
   setRefToAppController(self);
@@ -1638,31 +1632,6 @@ static char *kMIJoinChannelAlertKey = "kMIJoinChannelAlertKey";
   
   /* Register defaults */
   [Defaults registerDefaults];
-
-  // TODO: Move this to Defaults.m
-  NSFont *defaultChannelFont = [NSFont fontWithName:@"Monaco" size:9.0];
-  NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                        [NSDictionary dictionary], @"shortcutDict",
-                        [NSArchiver archivedDataWithRootObject:defaultChannelFont], @"channelFont",
-                        [NSArchiver archivedDataWithRootObject:defaultChannelFont], @"nickListFont",
-                        [NSNumber numberWithBool:TRUE], @"showNicklist",
-                        [NSNumber numberWithBool:TRUE], @"useFloaterOnPriv",
-                        [NSNumber numberWithBool:NO], @"askQuit",
-                        [NSNumber numberWithBool:FALSE], @"bounceIconOnPriv",
-                        [NSNumber numberWithInt:0], @"channelBarOrientation",
-                        [NSNumber numberWithInt:TabShortcutArrows], @"tabShortcuts",
-                        [EventController defaults], @"eventDefaults",
-                        [NSDictionary dictionary], @"eventSilences",
-                        [NSNumber numberWithBool:YES], @"channelInTitle",
-                        [NSNumber numberWithBool:YES], @"homeEndGoesToTextView",
-                        [NSNumber numberWithBool:YES], @"inputTextEntrySpellCheck",
-                        [NSNumber numberWithBool:YES], @"showAlbumInSlashiTunes",
-                        [NSNumber numberWithBool:YES], @"antiAliasFonts",
-                        [NSNumber numberWithBool:NO], @"useSmallTextEntryFont",
-                        nil];
-    
-  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-  [defaults registerDefaults:dict];
 
   /* Check for any preference migrations we need to do. */
   [PreferenceVersionHelper checkVersionAndUpgrade];
@@ -1734,8 +1703,6 @@ static char *kMIJoinChannelAlertKey = "kMIJoinChannelAlertKey";
     NSLog(@"Can't load 'icon-dot' image!");
     iconOnPriv = [[NSApp applicationIconImage] retain];
   }
-  
-  [defaults registerDefaults:[NSDictionary dictionaryWithObject:@"Get MacIrssi - http://www.sysctl.co.uk/projects/macirssi/ " forKey:@"defaultQuitMessage"]];
   
   /* Delete first tab */
   [tabView removeTabViewItem:[tabView tabViewItemAtIndex:0]];

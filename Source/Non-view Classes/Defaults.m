@@ -16,31 +16,71 @@
  */
 
 #import <Foundation/NSUserDefaults.h>
+#import "EventController.h"
+#import "PreferenceViewController.h"
 #import "Defaults.h"
+
+static NSUserDefaults *standardDefaults;
 
 @implementation Defaults
 
-+ (void)registerDefaults {
-    NSUserDefaults *standardDefaults = [NSUserDefaults standardUserDefaults];
-    [standardDefaults registerDefaults:@{
-                                         @"ChatView.padding.horizontal": @2,
-                                         @"ChatView.padding.vertical": @5
-                                         }];
++ (void)initialize {
+    standardDefaults = [NSUserDefaults standardUserDefaults];
 }
 
++ (void)registerDefaults {
+    NSData *defaultFont = [NSArchiver archivedDataWithRootObject:[NSFont fontWithName:@"Monaco" size:12.0]];
+
+    [standardDefaults registerDefaults:
+     @{
+       @"ChatView.padding.horizontal": @2,
+       @"ChatView.padding.vertical": @5,
+
+       @"shortcutDict": [NSDictionary dictionary],
+
+       @"eventSilences": [NSDictionary dictionary],
+       @"eventDefaults": [EventController defaults],
+
+       @"channelFont": defaultFont,
+       @"nickListFont": defaultFont,
+
+       @"showNicklist": @TRUE,
+       @"useFloaterOnPriv": @TRUE,
+       @"askQuit": @FALSE,
+       @"bounceIconOnPriv": @FALSE,
+
+       @"channelInTitle": @TRUE,
+       @"homeEndGoesToTextView": @TRUE,
+       @"inputTextEntrySpellCheck": @TRUE,
+       @"showAlbumInSlashiTunes": @TRUE,
+       @"antiAliasFonts": @TRUE,
+       @"useSmallTextEntryFont": @FALSE,
+
+       @"channelBarOrientation": @0,
+       @"tabShortcuts": [NSNumber numberWithInt:TabShortcutArrows],
+       @"defaultQuitMessage": @"Get MacIrssi - https://github.com/MacIrssi/MacIrssi "
+
+       }];
+}
+
+
+
+#pragma mark Default getters
+
 + (NSInteger)integerForKey:(NSString *)defaultName {
-    NSUserDefaults *standardDefaults = [NSUserDefaults standardUserDefaults];
     return [standardDefaults integerForKey:defaultName];
 }
 
-+ (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName {
-    NSUserDefaults *standardDefaults = [NSUserDefaults standardUserDefaults];
-    [standardDefaults setInteger:value forKey:defaultName];
++ (BOOL)boolForKey:(NSString *)defaultName {
+    return [standardDefaults boolForKey:defaultName];
 }
 
-+ (BOOL)boolForKey:(NSString *)defaultName {
-    NSUserDefaults *standardDefaults = [NSUserDefaults standardUserDefaults];
-    return [standardDefaults boolForKey:defaultName];
+
+
+#pragma mark Default setters
+
++ (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName {
+    [standardDefaults setInteger:value forKey:defaultName];
 }
 
 
